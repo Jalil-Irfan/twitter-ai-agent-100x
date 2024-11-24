@@ -6,8 +6,10 @@ const scrapeTweetsWithAI = require('./services/twitterScraper');
 
 const generateResponse = require('./services/gptService');
 
+const analyzeSentiment = require('./services/sentimentService');
+
 app.get('/scrape', async (req, res) => {
-    const tweets = await scrapeTweets('hackathon');
+    const tweets = await scrapeTweetsWithAI('hackathon');
     res.json(tweets);
 });
 
@@ -29,4 +31,17 @@ app.get('/scrape-with-ai', async (req, res) => {
     const query = req.query.q || 'hackathon';
     const tweets = await scrapeTweetsWithAI(query);
     res.json(tweets);
+});
+
+app.get('/analyze-sentiment', async (req, res) => {
+    const query = req.query.q || 'hackathon';
+    const tweets = await scrapeTweetsWithAI(query);
+
+    // Analyze sentiment of each tweet
+    const tweetsWithSentiment = tweets.map(tweet => ({
+        content: tweet.content,
+        sentiment: analyzeSentiment(tweet.content)
+    }));
+
+    res.json(tweetsWithSentiment);
 });
