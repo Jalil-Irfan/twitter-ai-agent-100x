@@ -1,5 +1,13 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+
+puppeteer.use(StealthPlugin());
+
 const fs = require('fs');
+
+// Define a delay function
+const delay = (time) => new Promise(resolve => setTimeout(resolve, time));
 
 const scrapeTweets = async (query) => {
     // const browser = await puppeteer.launch({ headless: true });
@@ -7,21 +15,29 @@ const scrapeTweets = async (query) => {
     // To retain the user login in twitter
     const browser = await puppeteer.launch({
         headless: false,
-        userDataDir: './user_data' // This will save your session data in the `user_data` folder
+        userDataDir: './user_data', // Persist login data to avoid login every time
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled'
+        ]
     });
+
     const page = await browser.newPage();
-
     try {
-        // Load existing cookies if they exist  to avoid login everytime
-        // const cookiesPath = 'cookies.json';
-        // if (fs.existsSync(cookiesPath)) {
-        //     const cookies = JSON.parse(fs.readFileSync(cookiesPath));
-        //     await page.setCookie(...cookies);
-        // }
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
+        // Load existing cookies if they exist to reuse a logged-in session
+        const cookiesPath = './cookies.json';
+        if (fs.existsSync(cookiesPath)) {
+            const cookies = JSON.parse(fs.readFileSync(cookiesPath, 'utf-8'));
+            await page.setCookie(...cookies);
+        }
+
+        // Navigate to Twitter
         await page.goto('https://twitter.com/login', { waitUntil: 'networkidle2' });
 
-        // Only perform login if not logged in already
+        // Only perform login if necessary
         if (page.url().includes('login')) {
             await page.type('input[name="session[username_or_email]"]', 'Jalil_Irfan', { delay: 100 });
             await page.type('input[name="session[password]"]', 'JarnIril-23', { delay: 100 });
@@ -30,18 +46,18 @@ const scrapeTweets = async (query) => {
             await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
             // Save cookies after login
-            // const cookies = await page.cookies();
-            // fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
+            const cookies = await page.cookies();
+            fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
         }
 
+        // Now go to the search page to scrape tweets
         await page.goto('https://twitter.com/search?q=' + encodeURIComponent(query) + '&src=typed_query', {
             waitUntil: 'networkidle2'
         });
 
         // Add a manual delay to make sure the page has enough time to load
-        await page.waitForTimeout(5000);
-        
-        // Wait for tweets to load (basic selector example)
+        await delay(5000);  // Using the custom delay function
+
         await page.waitForSelector('article',{timeout: 60000});
 
         const tweets = await page.evaluate(() => {
@@ -53,6 +69,7 @@ const scrapeTweets = async (query) => {
 
         console.log(tweets);
         return tweets;
+
     } catch (error) {
         console.error('Error scraping tweets:', error);
     } finally {

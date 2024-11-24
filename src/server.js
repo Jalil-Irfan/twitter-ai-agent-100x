@@ -8,6 +8,8 @@ const generateResponse = require('./services/gptService');
 
 const analyzeSentiment = require('./services/sentimentService');
 
+const generateMemeCaption = require('./services/memeService');
+
 app.get('/scrape', async (req, res) => {
     const tweets = await scrapeTweetsWithAI('hackathon');
     res.json(tweets);
@@ -30,7 +32,17 @@ app.get('/respond', async (req, res) => {
 app.get('/scrape-with-ai', async (req, res) => {
     const query = req.query.q || 'hackathon';
     const tweets = await scrapeTweetsWithAI(query);
-    res.json(tweets);
+    // Add AI insights and sentiment analysis for each tweet
+    const tweetsWithAI = await Promise.all(tweets.map(async (tweet) => {
+        const insight = await generateResponse(`Provide insights about the following tweet: "${tweet.content}"`);
+        const sentiment = analyzeSentiment(tweet.content);
+
+        return {
+            content: tweet.content,
+            insight: insight,
+            sentiment: sentiment
+        };
+    }));
 });
 
 app.get('/analyze-sentiment', async (req, res) => {
@@ -44,4 +56,17 @@ app.get('/analyze-sentiment', async (req, res) => {
     }));
 
     res.json(tweetsWithSentiment);
+});
+
+app.get('/generate-meme', async (req, res) => {
+    const query = req.query.q || 'hackathon';
+    const tweets = await scrapeTweetsWithAI(query);
+
+    // Generate meme captions for each tweet
+    const memeCaptions = tweets.map(tweet => ({
+        content: tweet.content,
+        memeCaption: generateMemeCaption(tweet.content)
+    }));
+
+    res.json(memeCaptions);
 });
