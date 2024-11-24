@@ -2,7 +2,9 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const scrapeTweets = require('./services/twitterScraper');
+const scrapeTweetsWithAI = require('./services/twitterScraper');
+
+const generateResponse = require('./services/gptService');
 
 app.get('/scrape', async (req, res) => {
     const tweets = await scrapeTweets('hackathon');
@@ -15,4 +17,16 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+app.get('/respond', async (req, res) => {
+    const userPrompt = req.query.prompt || "Tell me a joke!";
+    const response = await generateResponse(userPrompt);
+    res.json({ prompt: userPrompt, response: response });
+});
+
+app.get('/scrape-with-ai', async (req, res) => {
+    const query = req.query.q || 'hackathon';
+    const tweets = await scrapeTweetsWithAI(query);
+    res.json(tweets);
 });

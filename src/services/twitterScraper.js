@@ -27,4 +27,18 @@ const scrapeTweets = async (query) => {
     }
 };
 
+const generateResponse = require('./gptService');
+
+const scrapeTweetsWithAI = async (query) => {
+    const tweets = await scrapeTweets(query);
+
+    // Generate an AI response for each tweet
+    for (let tweet of tweets) {
+        tweet.insight = await generateResponse(`Provide insights about the following tweet: "${tweet.content}"`);
+    }
+
+    return tweets;
+};
+
+
 module.exports = scrapeTweets;
