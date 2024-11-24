@@ -13,11 +13,11 @@ const scrapeTweets = async (query) => {
 
     try {
         // Load existing cookies if they exist  to avoid login everytime
-        const cookiesPath = 'cookies.json';
-        if (fs.existsSync(cookiesPath)) {
-            const cookies = JSON.parse(fs.readFileSync(cookiesPath));
-            await page.setCookie(...cookies);
-        }
+        // const cookiesPath = 'cookies.json';
+        // if (fs.existsSync(cookiesPath)) {
+        //     const cookies = JSON.parse(fs.readFileSync(cookiesPath));
+        //     await page.setCookie(...cookies);
+        // }
 
         await page.goto('https://twitter.com/login', { waitUntil: 'networkidle2' });
 
@@ -30,8 +30,8 @@ const scrapeTweets = async (query) => {
             await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
             // Save cookies after login
-            const cookies = await page.cookies();
-            fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
+            // const cookies = await page.cookies();
+            // fs.writeFileSync(cookiesPath, JSON.stringify(cookies, null, 2));
         }
 
         await page.goto('https://twitter.com/search?q=' + encodeURIComponent(query) + '&src=typed_query', {
@@ -42,7 +42,7 @@ const scrapeTweets = async (query) => {
         await page.waitForTimeout(5000);
         
         // Wait for tweets to load (basic selector example)
-        await page.waitForSelector('article');
+        await page.waitForSelector('article',{timeout: 60000});
 
         const tweets = await page.evaluate(() => {
             return Array.from(document.querySelectorAll('article')).map(tweet => {
@@ -52,6 +52,7 @@ const scrapeTweets = async (query) => {
         });
 
         console.log(tweets);
+        return tweets;
     } catch (error) {
         console.error('Error scraping tweets:', error);
     } finally {
@@ -73,4 +74,4 @@ const scrapeTweetsWithAI = async (query) => {
 };
 
 
-module.exports = scrapeTweets;
+module.exports = scrapeTweetsWithAI;
