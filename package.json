@@ -1,0 +1,12 @@
+{
+  "name": "twitter-ai-agent-100x",
+  "version": "1.0.0",
+  "description": "Ai agent that helps to make twitter expereince better by commenting or analysing the post through pictures or text with personality analysing, latest trend, fact check, jokes , etc...",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
