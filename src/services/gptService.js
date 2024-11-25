@@ -43,7 +43,19 @@ const generateResponse = async (prompt, retries = 3) => {
 };
 
 const scrapeTweets = async (query) => {
-    const browser = await puppeteer.launch({ headless: false });
+    // const browser = await puppeteer.launch({ headless: false });
+
+    // To retain the user login in twitter
+    const browser = await puppeteer.launch({
+        headless: false,
+        userDataDir: './user_data', // Persist login data to avoid login every time
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-blink-features=AutomationControlled'
+        ]
+    });
+    
     const page = await browser.newPage();
 
     try {
