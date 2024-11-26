@@ -47,7 +47,7 @@ const scrapeTweets = async (query) => {
 
     // To retain the user login in twitter
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         userDataDir: './user_data', // Persist login data to avoid login every time
         args: [
             '--no-sandbox',

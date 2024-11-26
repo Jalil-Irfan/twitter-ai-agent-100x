@@ -1,13 +1,28 @@
-# Base image
 FROM node:16
 
-# Install required libraries for Puppeteer
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     libnss3 \
-    libxss1 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxcomposite1 \
+    libxrandr2 \
+    libxdamage1 \
+    libgdk-pixbuf2.0-0 \
     libasound2 \
+    libx11-xcb1 \
+    libxcb-dri3-0 \
+    libdrm2 \
+    libgbm1 \
+    libxshmfence1 \
+    libxext6 \
+    libxfixes3 \
+    libnspr4 \
     fonts-liberation \
     libappindicator3-1 \
+    libxss1 \
+    xdg-utils \
     lsb-release \
     xdg-utils \
     libgbm-dev \
@@ -15,14 +30,12 @@ RUN apt-get update && apt-get install -y \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Install Puppeteer and other project dependencies
 WORKDIR /usr/src/app
-
-# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the application files
+# Copy source code
 COPY . .
 
 # Install Puppeteer dependencies
@@ -33,3 +46,6 @@ EXPOSE 3000
 
 # Run the application
 CMD ["npm", "start"]
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
