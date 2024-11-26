@@ -47,5 +47,5 @@ EXPOSE 3000
 # Run the application
 CMD ["npm", "start"]
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false
+# ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
